@@ -3,8 +3,9 @@
     <ProjectTile
       v-for="(project, index) in projectList"
       :key="index"
-      :title="project.title"
-      :description="project.description"
+      :name="project.name"
+      :status="project.status"
+      :dueDate="project.dueDate"
     />
   </div>
 </template>
@@ -20,10 +21,23 @@ export default {
   data() {
     return {
       projectList: [
-        { title: "Q3 Strategy", description: "Team-wide goals for the quarter" },
-        { title: "AI Upgrade Pilot", description: "Evaluating new leadership features" }
+        {
+          name: "Q3 Strategy",
+          status: "In Progress",
+          dueDate: "2025-08-15"
+        },
+        {
+          name: "AI Upgrade Pilot",
+          status: "Planned",
+          dueDate: "2025-09-01"
+        },
+        {
+          name: "Casablanca Expansion",
+          status: "Completed",
+          dueDate: "2025-07-10"
+        }
       ]
-    }
+    };
   }
 }
 </script>
@@ -31,9 +45,9 @@ export default {
 <style scoped>
 .project-dashboard {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
-  max-width: 700px;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
   margin: 40px auto;
 }
 </style>
