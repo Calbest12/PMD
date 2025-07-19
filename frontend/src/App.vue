@@ -2,22 +2,38 @@
   <div id="app">
     <Navigation />
     <Slider />
-    <DashboardTiles/>
   </div>
 </template>
 
 <script>
 import Navigation from './components/Navigation.vue'
 import Slider from './components/Slider.vue'
-import DashboardTile from "@/components/DashboardTiles.vue";
+import TeamAverageChart from './components/TeamAverageChart.vue'
+import ProjectDashboard from './components/ProjectDashboard.vue'
 
 export default {
   components: {
-    DashboardTiles,
     Navigation,
-    Slider
+    Slider,
+    TeamAverageChart,
+    ProjectDashboard
+  },
+  data() {
+    return {
+      scores: {
+        projectManagement: 4,
+        leadership: 4,
+        organizationalChange: 4
+      }
+    };
+  },
+  methods: {
+    updateScores(newScores) {
+      this.scores = { ...newScores };
+    }
   }
 }
+
 </script>
 
 <style>
