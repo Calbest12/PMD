@@ -1,9 +1,12 @@
 <template>
   <div id="app">
     <Navigation />
-    <Slider />
+    <Slider @submit-feedback="updateScores" />
+    <TeamAverageChart :scores="scores" />
+    <ProjectDashboard />
   </div>
 </template>
+
 
 <script>
 import Navigation from './components/Navigation.vue'
