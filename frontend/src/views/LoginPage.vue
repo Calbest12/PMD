@@ -66,7 +66,7 @@ function onSubmit() {
     message.value = 'Both fields are required.'
     return
   }
-  // For now, just redirect to the components for the dashboard
+  // For now, redirect to the components for the dashboard
   router.push('/dashboard')
 }
 </script>

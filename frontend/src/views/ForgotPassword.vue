@@ -26,7 +26,6 @@ function sendLink() { //can change this
 }
 </script>
 
-
 <style scoped>
 .auth-container {
   max-width: 320px;

@@ -9,6 +9,7 @@ const routes = [
   { path: '/signup', component: () => import('@/views/SignUpPage.vue') },
 ]
 
+
 export default createRouter({
   history: createWebHistory(),
   routes
