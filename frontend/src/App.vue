@@ -1,9 +1,12 @@
 <template>
   <div id="app">
+    <!-- view these components if on a dashboard route -->
+    <div v-if="isDashboardPage">
     <Navigation />
     <Slider @submit-feedback="updateScores" />
     <TeamAverageChart :scores="scores" />
-    <ProjectDashboard />
+    </div>
+    <router-view/> <!-- current route view -->
   </div>
 </template>
 
@@ -12,14 +15,12 @@
 import Navigation from './components/Navigation.vue'
 import Slider from './components/Slider.vue'
 import TeamAverageChart from './components/TeamAverageChart.vue'
-import ProjectDashboard from './components/ProjectDashboard.vue'
 
 export default {
   components: {
     Navigation,
     Slider,
     TeamAverageChart,
-    ProjectDashboard
   },
   data() {
     return {
@@ -30,6 +31,14 @@ export default {
       }
     };
   },
+  computed: {
+  isDashboardPage() {
+    // This reads the current URL from Vue Router
+    // then returns true only on your dashboard routes
+    const { path } = this.$route
+    return ['/dashboard', '/limited-dashboard'].includes(path)
+  }
+},
   methods: {
     updateScores(newScores) {
       this.scores = { ...newScores };
