@@ -6,7 +6,7 @@
     <Slider @submit-feedback="updateScores" />
     <TeamAverageChart :scores="scores" />
     </div>
-    <router-view/> <!-- current route view -->
+    <router-view/> <!-- current route  -->
   </div>
 </template>
 

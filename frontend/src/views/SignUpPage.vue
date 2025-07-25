@@ -11,7 +11,7 @@
       <button type="submit">Sign Up</button>
     </form>
 
-    <!-- Link to login page -->
+    <!-- Link to log in page -->
     <div class="links">
       <button class="link-btn" @click="goToLoginPage">Already have an account? Log In</button>
     </div>

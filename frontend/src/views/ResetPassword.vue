@@ -76,6 +76,7 @@ function onSubmit() {
     return
   }
 
+  // for backend stuff???
   // await axios.post('/api/password/reset', { new_password: newPassword.value })
 
   // simulate success

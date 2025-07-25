@@ -21,7 +21,7 @@
 import { ref } from 'vue'
 const email   = ref('')
 const message = ref('')
-function sendLink() {
+function sendLink() { //can change this
   message.value = `If that email exists, you’ll get a reset link shortly.`
 }
 </script>
