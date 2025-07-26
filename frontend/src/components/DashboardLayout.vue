@@ -11,8 +11,8 @@
             </div>
             <h1 v-if="!sidebarCollapsed" class="logo-text">PMgt</h1>
           </div>
-          <button
-            @click="toggleSidebar"
+          <button 
+            @click="toggleSidebar" 
             class="sidebar-toggle"
             :title="sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
           >
@@ -22,8 +22,8 @@
 
         <nav class="sidebar-navigation">
           <ul class="nav-menu">
-            <li
-              v-for="item in navigationItems"
+            <li 
+              v-for="item in navigationItems" 
               :key="item.id"
               :class="{ active: activeSection === item.id }"
               @click="setActiveSection(item.id)"
@@ -45,17 +45,6 @@
               <span class="user-role">{{ currentUser.role }}</span>
             </div>
           </div>
-          <button @click="logout" class="logout-btn">
-            <i class="fas fa-sign-out-alt"></i>
-            Logout
-          </button>
-        </div>
-
-        <!-- Collapsed sidebar logout -->
-        <div v-else class="sidebar-footer collapsed">
-          <button @click="logout" class="logout-btn-collapsed" title="Logout">
-            <i class="fas fa-sign-out-alt"></i>
-          </button>
         </div>
       </aside>
 
@@ -120,20 +109,20 @@
               <div class="filter-group">
                 <label class="filter-label">Progress Range</label>
                 <div class="range-filter">
-                  <input
-                    type="range"
-                    v-model="filters.progressMin"
+                  <input 
+                    type="range" 
+                    v-model="filters.progressMin" 
                     @input="applyFilters"
-                    min="0"
-                    max="100"
+                    min="0" 
+                    max="100" 
                     class="range-input"
                   >
-                  <input
-                    type="range"
-                    v-model="filters.progressMax"
+                  <input 
+                    type="range" 
+                    v-model="filters.progressMax" 
                     @input="applyFilters"
-                    min="0"
-                    max="100"
+                    min="0" 
+                    max="100" 
                     class="range-input"
                   >
                   <div class="range-labels">
@@ -147,14 +136,14 @@
             <div class="search-section">
               <div class="search-container">
                 <i class="fas fa-search search-icon"></i>
-                <input
+                <input 
                   v-model="filters.search"
                   @input="applyFilters"
                   placeholder="Search projects, descriptions, or team members..."
                   class="search-input"
                 >
-                <button
-                  v-if="filters.search"
+                <button 
+                  v-if="filters.search" 
                   @click="clearSearch"
                   class="clear-search-btn"
                 >
@@ -165,7 +154,7 @@
 
             <div class="view-controls">
               <div class="view-toggle">
-                <button
+                <button 
                   :class="{ active: viewMode === 'grid' }"
                   @click="viewMode = 'grid'"
                   class="view-btn"
@@ -173,7 +162,7 @@
                 >
                   <i class="fas fa-th"></i>
                 </button>
-                <button
+                <button 
                   :class="{ active: viewMode === 'list' }"
                   @click="viewMode = 'list'"
                   class="view-btn"
@@ -182,7 +171,7 @@
                   <i class="fas fa-list"></i>
                 </button>
               </div>
-
+              
               <div class="sort-controls">
                 <select v-model="sortBy" @change="applyFilters" class="sort-select">
                   <option value="updated">Last Updated</option>
@@ -191,7 +180,7 @@
                   <option value="priority">Priority</option>
                   <option value="deadline">Deadline</option>
                 </select>
-                <button
+                <button 
                   @click="toggleSortOrder"
                   class="sort-order-btn"
                   :title="sortOrder === 'desc' ? 'Sort Ascending' : 'Sort Descending'"
@@ -202,10 +191,45 @@
             </div>
           </div>
 
+          <!-- Active Filters Display -->
+          <div v-if="hasActiveFilters" class="active-filters">
+            <div class="filter-tags">
+              <span v-if="filters.status" class="filter-tag">
+                Status: {{ filters.status }}
+                <button @click="clearFilter('status')" class="filter-remove">×</button>
+              </span>
+              <span v-if="filters.team" class="filter-tag">
+                Team: {{ getTeamName(filters.team) }}
+                <button @click="clearFilter('team')" class="filter-remove">×</button>
+              </span>
+              <span v-if="filters.priority" class="filter-tag">
+                Priority: {{ filters.priority }}
+                <button @click="clearFilter('priority')" class="filter-remove">×</button>
+              </span>
+              <span v-if="filters.search" class="filter-tag">
+                Search: "{{ filters.search }}"
+                <button @click="clearFilter('search')" class="filter-remove">×</button>
+              </span>
+            </div>
+            <button @click="clearAllFilters" class="clear-all-btn">
+              Clear All Filters
+            </button>
+          </div>
+
           <!-- Results Summary -->
           <div class="results-summary">
             <div class="results-info">
               <span class="results-count">{{ filteredProjects.length }} of {{ projects.length }} projects</span>
+              <span v-if="hasActiveFilters" class="filtered-indicator">
+                <i class="fas fa-filter"></i>
+                Filtered
+              </span>
+            </div>
+            <div class="bulk-actions" v-if="selectedProjects.length > 0">
+              <span class="selected-count">{{ selectedProjects.length }} selected</span>
+              <button @click="bulkUpdateStatus" class="bulk-btn">Update Status</button>
+              <button @click="bulkAssignTeam" class="bulk-btn">Assign Team</button>
+              <button @click="bulkExport" class="bulk-btn">Export Selected</button>
             </div>
           </div>
 
@@ -213,12 +237,26 @@
           <div class="projects-container">
             <!-- Grid View -->
             <div v-if="viewMode === 'grid'" class="projects-grid">
-              <div
-                v-for="project in paginatedProjects"
+              <div 
+                v-for="project in paginatedProjects" 
                 :key="project.id"
                 class="project-card"
+                :class="{ 
+                  selected: selectedProjects.includes(project.id),
+                  'high-priority': project.priority === 'critical' || project.priority === 'high'
+                }"
                 @click="selectProject(project)"
               >
+                <!-- Selection Checkbox -->
+                <div class="project-checkbox">
+                  <input 
+                    type="checkbox"
+                    :checked="selectedProjects.includes(project.id)"
+                    @change="toggleProjectSelection(project.id)"
+                    @click.stop
+                  >
+                </div>
+
                 <!-- Project Header -->
                 <div class="project-header">
                   <div class="project-title-section">
@@ -226,6 +264,22 @@
                     <div class="project-badges">
                       <span :class="'status-badge status-' + project.status">{{ project.status }}</span>
                       <span :class="'priority-badge priority-' + project.priority">{{ project.priority }}</span>
+                    </div>
+                  </div>
+                  <div class="project-menu">
+                    <button @click.stop="toggleProjectMenu(project.id)" class="menu-btn">
+                      <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <div v-if="activeProjectMenu === project.id" class="project-dropdown">
+                      <button @click="editProject(project)" class="dropdown-item">
+                        <i class="fas fa-edit"></i> Edit
+                      </button>
+                      <button @click="duplicateProject(project)" class="dropdown-item">
+                        <i class="fas fa-copy"></i> Duplicate
+                      </button>
+                      <button @click="archiveProject(project)" class="dropdown-item">
+                        <i class="fas fa-archive"></i> Archive
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -240,8 +294,8 @@
                     <span class="progress-value">{{ project.progress }}%</span>
                   </div>
                   <div class="progress-bar">
-                    <div
-                      class="progress-fill"
+                    <div 
+                      class="progress-fill" 
                       :style="{ width: project.progress + '%' }"
                       :class="getProgressClass(project.progress)"
                     ></div>
@@ -251,6 +305,19 @@
                 <!-- Team and Timeline -->
                 <div class="project-meta">
                   <div class="team-info">
+                    <div class="team-avatars">
+                      <img 
+                        v-for="member in project.team.members.slice(0, 3)" 
+                        :key="member.id"
+                        :src="member.avatar" 
+                        :alt="member.name"
+                        :title="member.name"
+                        class="team-avatar"
+                      >
+                      <span v-if="project.team.members.length > 3" class="team-count">
+                        +{{ project.team.members.length - 3 }}
+                      </span>
+                    </div>
                     <span class="team-name">{{ project.team.name }}</span>
                   </div>
                   <div class="timeline-info">
@@ -259,6 +326,95 @@
                       {{ formatDate(project.deadline) }}
                     </span>
                   </div>
+                </div>
+
+                <!-- Project Footer -->
+                <div class="project-footer">
+                  <div class="last-update">
+                    <i class="fas fa-clock"></i>
+                    <span>Updated {{ formatRelativeTime(project.updatedAt) }}</span>
+                  </div>
+                  <div class="project-insights">
+                    <div class="insight-indicator" v-if="project.aiInsights > 0">
+                      <i class="fas fa-brain"></i>
+                      <span>{{ project.aiInsights }} insights</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- List View -->
+            <div v-if="viewMode === 'list'" class="projects-list">
+              <div class="list-header">
+                <div class="list-column">Project</div>
+                <div class="list-column">Team</div>
+                <div class="list-column">Status</div>
+                <div class="list-column">Progress</div>
+                <div class="list-column">Deadline</div>
+                <div class="list-column">Actions</div>
+              </div>
+              
+              <div 
+                v-for="project in paginatedProjects" 
+                :key="project.id"
+                class="list-row"
+                :class="{ selected: selectedProjects.includes(project.id) }"
+                @click="selectProject(project)"
+              >
+                <div class="list-column project-info">
+                  <input 
+                    type="checkbox"
+                    :checked="selectedProjects.includes(project.id)"
+                    @change="toggleProjectSelection(project.id)"
+                    @click.stop
+                    class="row-checkbox"
+                  >
+                  <div class="project-details">
+                    <h4 class="project-name">{{ project.name }}</h4>
+                    <p class="project-desc">{{ project.description }}</p>
+                  </div>
+                </div>
+                
+                <div class="list-column team-column">
+                  <div class="team-display">
+                    <img :src="project.team.members[0].avatar" :alt="project.team.name" class="team-lead-avatar">
+                    <span>{{ project.team.name }}</span>
+                  </div>
+                </div>
+                
+                <div class="list-column">
+                  <span :class="'status-badge status-' + project.status">{{ project.status }}</span>
+                </div>
+                
+                <div class="list-column progress-column">
+                  <div class="mini-progress">
+                    <div class="mini-progress-bar">
+                      <div 
+                        class="mini-progress-fill" 
+                        :style="{ width: project.progress + '%' }"
+                      ></div>
+                    </div>
+                    <span class="mini-progress-text">{{ project.progress }}%</span>
+                  </div>
+                </div>
+                
+                <div class="list-column deadline-column">
+                  <span :class="{ overdue: isOverdue(project.deadline) }">
+                    {{ formatDate(project.deadline) }}
+                  </span>
+                </div>
+                
+                <div class="list-column actions-column">
+                  <button @click.stop="editProject(project)" class="list-action-btn">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button @click.stop="viewProject(project)" class="list-action-btn">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button @click.stop="toggleProjectMenu(project.id)" class="list-action-btn">
+                    <i class="fas fa-ellipsis-v"></i>
+                  </button>
                 </div>
               </div>
             </div>
@@ -269,15 +425,70 @@
                 <i class="fas fa-folder-open"></i>
               </div>
               <h3>No Projects Found</h3>
-              <p>You haven't created any projects yet.</p>
-              <button @click="showCreateProject = true" class="empty-action-btn">
-                Create Project
+              <p v-if="hasActiveFilters">
+                No projects match your current filters. Try adjusting your search criteria.
+              </p>
+              <p v-else>
+                You haven't created any projects yet. Get started by creating your first project.
+              </p>
+              <button @click="hasActiveFilters ? clearAllFilters() : (showCreateProject = true)" class="empty-action-btn">
+                {{ hasActiveFilters ? 'Clear Filters' : 'Create Project' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Pagination -->
+          <div v-if="totalPages > 1" class="pagination-container">
+            <div class="pagination-info">
+              Showing {{ (currentPage - 1) * itemsPerPage + 1 }} to {{ Math.min(currentPage * itemsPerPage, filteredProjects.length) }} of {{ filteredProjects.length }} projects
+            </div>
+            <div class="pagination-controls">
+              <button 
+                @click="goToPage(1)"
+                :disabled="currentPage === 1"
+                class="pagination-btn"
+              >
+                <i class="fas fa-angle-double-left"></i>
+              </button>
+              <button 
+                @click="goToPage(currentPage - 1)"
+                :disabled="currentPage === 1"
+                class="pagination-btn"
+              >
+                <i class="fas fa-chevron-left"></i>
+              </button>
+              
+              <div class="page-numbers">
+                <button 
+                  v-for="page in visiblePages" 
+                  :key="page"
+                  @click="goToPage(page)"
+                  :class="{ active: page === currentPage }"
+                  class="page-btn"
+                >
+                  {{ page }}
+                </button>
+              </div>
+              
+              <button 
+                @click="goToPage(currentPage + 1)"
+                :disabled="currentPage === totalPages"
+                class="pagination-btn"
+              >
+                <i class="fas fa-chevron-right"></i>
+              </button>
+              <button 
+                @click="goToPage(totalPages)"
+                :disabled="currentPage === totalPages"
+                class="pagination-btn"
+              >
+                <i class="fas fa-angle-double-right"></i>
               </button>
             </div>
           </div>
         </div>
 
-        <!-- Dashboard Sections -->
+        <!-- Dashboard Sections Smooth Transitions -->
         <div v-if="activeSection === 'overview'" class="overview-section">
           <div class="section-header">
             <div class="header-title">
@@ -302,6 +513,24 @@
               <div class="stat-content">
                 <h3>{{ projects.filter(p => p.status === 'active').length }}</h3>
                 <p>Active Projects</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">
+                <i class="fas fa-check"></i>
+              </div>
+              <div class="stat-content">
+                <h3>{{ projects.filter(p => p.status === 'completed').length }}</h3>
+                <p>Completed</p>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">
+                <i class="fas fa-users"></i>
+              </div>
+              <div class="stat-content">
+                <h3>{{ teams.length }}</h3>
+                <p>Teams</p>
               </div>
             </div>
           </div>
@@ -403,9 +632,16 @@ export default {
           priority: 'high',
           progress: 75,
           deadline: '2024-03-15',
+          aiInsights: 3,
           team: {
             id: 1,
-            name: 'Frontend Team'
+            name: 'Frontend Team',
+            members: [
+              { id: 1, name: 'John Doe', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150' },
+              { id: 2, name: 'Jane Smith', avatar: 'https://images.unsplash.com/photo-1494790108755-2616b9a28f3a?w=150' },
+              { id: 3, name: 'Mike Johnson', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150' },
+              { id: 4, name: 'Sarah Wilson', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150' }
+            ]
           },
           updatedAt: '2024-01-15T10:30:00Z'
         },
@@ -417,94 +653,283 @@ export default {
           priority: 'critical',
           progress: 25,
           deadline: '2024-05-20',
+          aiInsights: 2,
           team: {
             id: 2,
-            name: 'Backend Team'
+            name: 'Backend Team',
+            members: [
+              { id: 5, name: 'Alex Brown', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150' },
+              { id: 6, name: 'Emily Davis', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150' }
+            ]
           },
           updatedAt: '2024-01-14T14:20:00Z'
+        },
+        {
+          id: 3,
+          name: 'Database Migration',
+          description: 'Migrate legacy database to cloud infrastructure',
+          status: 'completed',
+          priority: 'medium',
+          progress: 100,
+          deadline: '2024-01-30',
+          aiInsights: 1,
+          team: {
+            id: 2,
+            name: 'Backend Team',
+            members: [
+              { id: 7, name: 'David Miller', avatar: 'https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?w=150' },
+              { id: 8, name: 'Lisa Garcia', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150' },
+              { id: 9, name: 'Tom Anderson', avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f7a?w=150' }
+            ]
+          },
+          updatedAt: '2024-01-10T09:15:00Z'
+        },
+        {
+          id: 4,
+          name: 'E-commerce Platform',
+          description: 'Build a scalable e-commerce solution with payment integration',
+          status: 'active',
+          priority: 'high',
+          progress: 60,
+          deadline: '2024-04-10',
+          aiInsights: 4,
+          team: {
+            id: 1,
+            name: 'Frontend Team',
+            members: [
+              { id: 1, name: 'John Doe', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150' },
+              { id: 10, name: 'Rachel Green', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150' }
+            ]
+          },
+          updatedAt: '2024-01-13T16:45:00Z'
+        },
+        {
+          id: 5,
+          name: 'API Documentation',
+          description: 'Comprehensive API documentation and developer portal',
+          status: 'on_hold',
+          priority: 'low',
+          progress: 40,
+          deadline: '2024-06-01',
+          aiInsights: 0,
+          team: {
+            id: 3,
+            name: 'Design Team',
+            members: [
+              { id: 11, name: 'Chris Lee', avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150' }
+            ]
+          },
+          updatedAt: '2024-01-08T11:20:00Z'
         }
       ]
     }
   },
   computed: {
+    hasActiveFilters() {
+      return this.filters.status || this.filters.team || this.filters.priority || 
+             this.filters.search || this.filters.progressMin > 0 || this.filters.progressMax < 100;
+    },
+    
     filteredProjects() {
       let filtered = [...this.projects];
-
+      
       // Apply status filter
       if (this.filters.status) {
         filtered = filtered.filter(p => p.status === this.filters.status);
       }
-
+      
       // Apply team filter
       if (this.filters.team) {
         filtered = filtered.filter(p => p.team.id === parseInt(this.filters.team));
       }
-
+      
       // Apply priority filter
       if (this.filters.priority) {
         filtered = filtered.filter(p => p.priority === this.filters.priority);
       }
-
+      
       // Apply search filter
       if (this.filters.search) {
         const query = this.filters.search.toLowerCase();
-        filtered = filtered.filter(p =>
+        filtered = filtered.filter(p => 
           p.name.toLowerCase().includes(query) ||
           p.description.toLowerCase().includes(query) ||
-          p.team.name.toLowerCase().includes(query)
+          p.team.name.toLowerCase().includes(query) ||
+          p.team.members.some(m => m.name.toLowerCase().includes(query))
         );
       }
-
+      
       // Apply progress range filter
-      filtered = filtered.filter(p =>
+      filtered = filtered.filter(p => 
         p.progress >= this.filters.progressMin && p.progress <= this.filters.progressMax
       );
-
+      
+      // Apply sorting
+      filtered.sort((a, b) => {
+        let aVal, bVal;
+        
+        switch (this.sortBy) {
+          case 'name':
+            aVal = a.name.toLowerCase();
+            bVal = b.name.toLowerCase();
+            break;
+          case 'progress':
+            aVal = a.progress;
+            bVal = b.progress;
+            break;
+          case 'priority':
+            const priorityOrder = { low: 1, medium: 2, high: 3, critical: 4 };
+            aVal = priorityOrder[a.priority];
+            bVal = priorityOrder[b.priority];
+            break;
+          case 'deadline':
+            aVal = new Date(a.deadline);
+            bVal = new Date(b.deadline);
+            break;
+          default: // updated
+            aVal = new Date(a.updatedAt);
+            bVal = new Date(b.updatedAt);
+        }
+        
+        if (this.sortOrder === 'desc') {
+          return bVal > aVal ? 1 : -1;
+        } else {
+          return aVal > bVal ? 1 : -1;
+        }
+      });
+      
       return filtered;
     },
-
+    
+    totalPages() {
+      return Math.ceil(this.filteredProjects.length / this.itemsPerPage);
+    },
+    
     paginatedProjects() {
       const start = (this.currentPage - 1) * this.itemsPerPage;
       return this.filteredProjects.slice(start, start + this.itemsPerPage);
+    },
+    
+    visiblePages() {
+      const pages = [];
+      const maxVisible = 5;
+      const half = Math.floor(maxVisible / 2);
+      
+      let start = Math.max(1, this.currentPage - half);
+      let end = Math.min(this.totalPages, start + maxVisible - 1);
+      
+      if (end - start + 1 < maxVisible) {
+        start = Math.max(1, end - maxVisible + 1);
+      }
+      
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+      
+      return pages;
     }
   },
   methods: {
     toggleSidebar() {
       this.sidebarCollapsed = !this.sidebarCollapsed;
     },
-
+    
     setActiveSection(section) {
       this.activeSection = section;
+      // Smooth transition effect
+      const mainContent = document.querySelector('.dashboard-main');
+      if (mainContent) {
+        mainContent.style.opacity = '0';
+        setTimeout(() => {
+          mainContent.style.opacity = '1';
+        }, 150);
+      }
     },
-
+    
     applyFilters() {
       this.currentPage = 1;
+      // Debounce search to avoid too many calls
+      clearTimeout(this.searchTimeout);
+      this.searchTimeout = setTimeout(() => {
+        // Filters are reactive through computed property
+      }, 300);
     },
-
+    
+    clearFilter(filterName) {
+      if (filterName === 'progressMin' || filterName === 'progressMax') {
+        this.filters.progressMin = 0;
+        this.filters.progressMax = 100;
+      } else {
+        this.filters[filterName] = '';
+      }
+      this.applyFilters();
+    },
+    
+    clearAllFilters() {
+      this.filters = {
+        status: '',
+        team: '',
+        priority: '',
+        search: '',
+        progressMin: 0,
+        progressMax: 100
+      };
+      this.applyFilters();
+    },
+    
     clearSearch() {
       this.filters.search = '';
       this.applyFilters();
     },
-
+    
+    toggleSortOrder() {
+      this.sortOrder = this.sortOrder === 'desc' ? 'asc' : 'desc';
+      this.applyFilters();
+    },
+    
     selectProject(project) {
       this.$emit('project-selected', project);
     },
-
+    
+    toggleProjectSelection(projectId) {
+      const index = this.selectedProjects.indexOf(projectId);
+      if (index > -1) {
+        this.selectedProjects.splice(index, 1);
+      } else {
+        this.selectedProjects.push(projectId);
+      }
+    },
+    
+    toggleProjectMenu(projectId) {
+      this.activeProjectMenu = this.activeProjectMenu === projectId ? null : projectId;
+    },
+    
+    goToPage(page) {
+      if (page >= 1 && page <= this.totalPages) {
+        this.currentPage = page;
+      }
+    },
+    
+    getTeamName(teamId) {
+      const team = this.teams.find(t => t.id === parseInt(teamId));
+      return team ? team.name : '';
+    },
+    
     getTeamProjectCount(teamId) {
       return this.projects.filter(p => p.team.id === teamId).length;
     },
-
+    
     getProgressClass(progress) {
       if (progress >= 80) return 'progress-excellent';
       if (progress >= 60) return 'progress-good';
       if (progress >= 40) return 'progress-fair';
       return 'progress-poor';
     },
-
+    
     isOverdue(deadline) {
       return new Date(deadline) < new Date();
     },
-
+    
     formatDate(dateString) {
       return new Date(dateString).toLocaleDateString('en-US', {
         month: 'short',
@@ -512,24 +937,75 @@ export default {
         year: 'numeric'
       });
     },
-
+    
+    formatRelativeTime(dateString) {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffTime = Math.abs(now - date);
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === 1) return 'yesterday';
+      if (diffDays < 7) return `${diffDays} days ago`;
+      if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
+      return `${Math.floor(diffDays / 30)} months ago`;
+    },
+    
+    // Action methods
+    editProject(project) {
+      console.log('Edit project:', project.name);
+      this.$emit('edit-project', project);
+    },
+    
+    duplicateProject(project) {
+      console.log('Duplicate project:', project.name);
+      this.$emit('duplicate-project', project);
+    },
+    
+    archiveProject(project) {
+      console.log('Archive project:', project.name);
+      this.$emit('archive-project', project);
+    },
+    
+    viewProject(project) {
+      console.log('View project:', project.name);
+      this.$emit('view-project', project);
+    },
+    
     exportProjects() {
       console.log('Export projects');
       this.$emit('export-projects', this.filteredProjects);
     },
-
-    async logout() {
-      try {
-        // Call the auth service logout
-        await this.$authService.logout()
-
-        // Redirect to login page
-        this.$router.push('/login')
-      } catch (error) {
-        console.error('Logout error:', error)
-        // Still redirect even if logout fails
-        this.$router.push('/login')
+    
+    bulkUpdateStatus() {
+      console.log('Bulk update status for:', this.selectedProjects);
+      this.$emit('bulk-update-status', this.selectedProjects);
+    },
+    
+    bulkAssignTeam() {
+      console.log('Bulk assign team for:', this.selectedProjects);
+      this.$emit('bulk-assign-team', this.selectedProjects);
+    },
+    
+    bulkExport() {
+      const selected = this.projects.filter(p => this.selectedProjects.includes(p.id));
+      console.log('Bulk export:', selected);
+      this.$emit('bulk-export', selected);
+    }
+  },
+  
+  mounted() {
+    // Close project menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.project-menu')) {
+        this.activeProjectMenu = null;
       }
+    });
+  },
+  
+  beforeUnmount() {
+    // Clean up event listeners
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
     }
   }
 }
@@ -661,12 +1137,13 @@ export default {
   margin-left: auto;
 }
 
+.nav-item.active .nav-badge {
+  background: rgba(255, 255, 255, 0.2);
+}
+
 .sidebar-footer {
   padding: 1.5rem;
   border-top: 1px solid #e2e8f0;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
 }
 
 .user-profile {
@@ -696,55 +1173,6 @@ export default {
 .user-role {
   color: #64748b;
   font-size: 0.75rem;
-}
-
-.logout-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
-  background: #ef4444;
-  color: white;
-  border: none;
-  border-radius: 0.375rem;
-  cursor: pointer;
-  font-weight: 500;
-  font-size: 0.875rem;
-  transition: all 0.2s;
-  width: 100%;
-}
-
-.logout-btn:hover {
-  background: #dc2626;
-}
-
-.logout-btn i {
-  font-size: 0.875rem;
-}
-
-.sidebar-footer.collapsed {
-  padding: 1rem;
-  border-top: 1px solid #e2e8f0;
-}
-
-.logout-btn-collapsed {
-  width: 40px;
-  height: 40px;
-  background: #ef4444;
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-  margin: 0 auto;
-}
-
-.logout-btn-collapsed:hover {
-  background: #dc2626;
 }
 
 /* Main Content */
@@ -785,7 +1213,9 @@ export default {
 .action-btn {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+    gap: 0.5rem;
+  }
+  </style>
   padding: 0.75rem 1.25rem;
   border-radius: 0.5rem;
   font-weight: 500;
@@ -855,6 +1285,29 @@ export default {
   cursor: pointer;
 }
 
+.filter-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.range-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.range-input {
+  width: 100%;
+}
+
+.range-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
 .search-section {
   flex: 1;
   min-width: 250px;
@@ -878,6 +1331,12 @@ export default {
   border: 1px solid #d1d5db;
   border-radius: 0.5rem;
   font-size: 0.875rem;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .clear-search-btn {
@@ -942,6 +1401,74 @@ export default {
   transition: all 0.2s;
 }
 
+.sort-order-btn:hover {
+  background: #f8fafc;
+  color: #1e293b;
+}
+
+/* Active Filters */
+.active-filters {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f1f5f9;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.filter-tags {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-tag {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: white;
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  border: 1px solid #e2e8f0;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.filter-remove {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.filter-remove:hover {
+  color: #ef4444;
+}
+
+.clear-all-btn {
+  padding: 0.5rem 1rem;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.clear-all-btn:hover {
+  background: #dc2626;
+}
+
+/* Results Summary */
 .results-summary {
   display: flex;
   justify-content: space-between;
@@ -960,6 +1487,40 @@ export default {
   color: #374151;
 }
 
+.filtered-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #3b82f6;
+  font-size: 0.875rem;
+}
+
+.bulk-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.selected-count {
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.bulk-btn {
+  padding: 0.5rem 0.75rem;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.375rem;
+  color: #374151;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.bulk-btn:hover {
+  background: #f8fafc;
+}
+
 /* Projects Grid */
 .projects-grid {
   display: grid;
@@ -975,6 +1536,7 @@ export default {
   padding: 1.5rem;
   cursor: pointer;
   transition: all 0.2s;
+  position: relative;
 }
 
 .project-card:hover {
@@ -982,8 +1544,30 @@ export default {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+.project-card.selected {
+  border-color: #3b82f6;
+  background: #f8fafc;
+}
+
+.project-card.high-priority {
+  border-left: 4px solid #ef4444;
+}
+
+.project-checkbox {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+}
+
 .project-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
   margin-bottom: 1rem;
+}
+
+.project-title-section {
+  flex: 1;
 }
 
 .project-title {
@@ -1015,6 +1599,55 @@ export default {
 .priority-medium { background: #fef3c7; color: #92400e; }
 .priority-high { background: #fed7aa; color: #c2410c; }
 .priority-critical { background: #fee2e2; color: #991b1b; }
+
+.project-menu {
+  position: relative;
+}
+
+.menu-btn {
+  padding: 0.25rem;
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  border-radius: 0.25rem;
+  transition: all 0.2s;
+}
+
+.menu-btn:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.project-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  z-index: 20;
+  min-width: 150px;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem;
+  background: none;
+  border: none;
+  text-align: left;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dropdown-item:hover {
+  background: #f8fafc;
+}
 
 .project-description {
   color: #64748b;
@@ -1068,12 +1701,39 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 1rem;
 }
 
 .team-info {
   display: flex;
   align-items: center;
   gap: 0.75rem;
+}
+
+.team-avatars {
+  display: flex;
+  align-items: center;
+}
+
+.team-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid white;
+  margin-left: -0.5rem;
+}
+
+.team-avatar:first-child {
+  margin-left: 0;
+}
+
+.team-count {
+  background: #f3f4f6;
+  color: #6b7280;
+  font-size: 0.75rem;
+  padding: 0.125rem 0.375rem;
+  border-radius: 9999px;
+  margin-left: 0.25rem;
 }
 
 .team-name {
@@ -1093,155 +1753,113 @@ export default {
   color: #ef4444;
 }
 
-/* Empty State */
-.empty-state {
-  text-align: center;
-  padding: 4rem 2rem;
+.project-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #9ca3af;
+  font-size: 0.75rem;
+}
+
+.last-update {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.insight-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #3b82f6;
+}
+
+/* Projects List View */
+.projects-list {
   background: white;
   border-radius: 0.75rem;
   border: 1px solid #e2e8f0;
+  overflow: hidden;
+  margin-bottom: 2rem;
 }
 
-.empty-icon {
-  font-size: 3rem;
-  color: #9ca3af;
-  margin-bottom: 1rem;
+.list-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.875rem;
 }
 
-.empty-state h3 {
-  color: #1e293b;
-  margin-bottom: 0.5rem;
-}
-
-.empty-state p {
-  color: #64748b;
-  margin-bottom: 1.5rem;
-}
-
-.empty-action-btn {
-  padding: 0.75rem 1.5rem;
-  background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 0.375rem;
+.list-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
   cursor: pointer;
-  font-weight: 500;
   transition: all 0.2s;
 }
 
-.empty-action-btn:hover {
-  background: #2563eb;
+.list-row:hover {
+  background: #f8fafc;
 }
 
-/* Overview Section */
-.overview-section {
-  padding: 2rem;
+.list-row.selected {
+  background: #eff6ff;
+  border-color: #3b82f6;
 }
 
-.overview-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-}
-
-.stat-card {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 0.75rem;
-  border: 1px solid #e2e8f0;
+.list-column {
   display: flex;
   align-items: center;
-  gap: 1rem;
 }
 
-.stat-icon {
-  width: 48px;
-  height: 48px;
-  background: #f1f5f9;
-  border-radius: 0.75rem;
+.project-info {
   display: flex;
   align-items: center;
-  justify-content: center;
-  color: #3b82f6;
-  font-size: 1.5rem;
+  gap: 0.75rem;
 }
 
-.stat-content h3 {
-  font-size: 2rem;
-  font-weight: 700;
+.row-checkbox {
+  margin-right: 0.75rem;
+}
+
+.project-details {
+  flex: 1;
+}
+
+.project-name {
+  font-weight: 600;
   color: #1e293b;
-  margin: 0;
-}
-
-.stat-content p {
-  color: #64748b;
-  margin: 0;
+  margin: 0 0 0.25rem 0;
   font-size: 0.875rem;
 }
 
-/* Other Sections */
-.analytics-section,
-.team-section,
-.settings-section {
-  padding: 2rem;
-}
-
-.analytics-placeholder,
-.settings-placeholder {
-  text-align: center;
-  padding: 4rem 2rem;
-  background: white;
-  border-radius: 0.75rem;
-  border: 1px solid #e2e8f0;
-  color: #9ca3af;
-}
-
-.analytics-placeholder i,
-.settings-placeholder i {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-}
-
-.teams-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1.5rem;
-}
-
-.team-card {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 0.75rem;
-  border: 1px solid #e2e8f0;
-}
-
-.team-card h3 {
-  color: #1e293b;
-  margin: 0 0 0.5rem 0;
-}
-
-.team-card p {
+.project-desc {
   color: #64748b;
+  font-size: 0.75rem;
   margin: 0;
-  font-size: 0.875rem;
+  line-height: 1.4;
 }
 
-@media (max-width: 768px) {
-  .dashboard-wrapper {
-    flex-direction: column;
-  }
-
-  .dashboard-sidebar {
-    width: 100%;
-    height: auto;
-  }
-
-  .projects-section {
-    padding: 1rem;
-  }
-
-  .projects-grid {
-    grid-template-columns: 1fr;
-  }
+.team-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
-</style>
+
+.team-lead-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+}
+
+.mini-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
