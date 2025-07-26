@@ -392,330 +392,97 @@ export default {
   name: 'CareerDevelopmentForm',
   data() {
     return {
-      showForm: false,
-      editMode: false,
-      isSubmitting: false,
-      form: {
-        teamMemberId: '',
-        skillName: '',
-        category: '',
-        currentLevel: '',
-        targetLevel: '',
-        targetDate: '',
-        priority: 'medium',
-        currentProgress: 0,
-        resources: [{ name: '', url: '' }],
-        notes: ''
-      },
-      errors: {},
-      filters: {
-        category: '',
-        priority: '',
-        teamMember: '',
-        search: ''
-      },
-      teamMembers: [
-        {
-          id: 1,
-          name: 'Sarah Johnson',
-          role: 'Frontend Developer',
-          avatar: '/api/placeholder/40/40'
-        },
-        {
-          id: 2,
-          name: 'Mike Chen',
-          role: 'Backend Developer',
-          avatar: '/api/placeholder/40/40'
-        },
-        {
-          id: 3,
-          name: 'Alex Rodriguez',
-          role: 'UI/UX Designer',
-          avatar: '/api/placeholder/40/40'
-        },
-        {
-          id: 4,
-          name: 'Emily Davis',
-          role: 'Project Manager',
-          avatar: '/api/placeholder/40/40'
-        }
-      ],
-      careerGoals: [
-        {
-          id: 1,
-          teamMemberId: 1,
-          teamMember: {
-            name: 'Sarah Johnson',
-            role: 'Frontend Developer',
-            avatar: '/api/placeholder/40/40'
-          },
-          skillName: 'Vue.js Advanced Patterns',
-          category: 'technical',
-          currentLevel: 'intermediate',
-          targetLevel: 'advanced',
-          currentProgress: 65,
-          targetDate: '2024-06-01',
-          priority: 'high',
-          resources: [
-            { name: 'Vue.js Official Documentation', url: 'https://vuejs.org/' },
-            { name: 'Vue Mastery Course', url: 'https://vuemastery.com/' }
-          ],
-          notes: 'Focus on composition API, custom hooks, and performance optimization techniques.',
-          updatedAt: '2024-01-10T10:00:00Z'
-        },
-        {
-          id: 2,
-          teamMemberId: 2,
-          teamMember: {
-            name: 'Mike Chen',
-            role: 'Backend Developer',
-            avatar: '/api/placeholder/40/40'
-          },
-          skillName: 'Microservices Architecture',
-          category: 'technical',
-          currentLevel: 'beginner',
-          targetLevel: 'intermediate',
-          currentProgress: 30,
-          targetDate: '2024-08-15',
-          priority: 'medium',
-          resources: [
-            { name: 'Microservices Patterns Book', url: '' },
-            { name: 'Docker Fundamentals', url: 'https://docker.com/' }
-          ],
-          notes: 'Start with containerization basics, then move to service mesh and API gateway patterns.',
-          updatedAt: '2024-01-05T14:30:00Z'
-        },
-        {
-          id: 3,
-          teamMemberId: 4,
-          teamMember: {
-            name: 'Emily Davis',
-            role: 'Project Manager',
-            avatar: '/api/placeholder/40/40'
-          },
-          skillName: 'Agile Leadership',
-          category: 'management',
-          currentLevel: 'intermediate',
-          targetLevel: 'advanced',
-          currentProgress: 80,
-          targetDate: '2024-04-30',
-          priority: 'critical',
-          resources: [
-            { name: 'Scrum Master Certification', url: '' },
-            { name: 'Agile Coaching Book', url: '' }
-          ],
-          notes: 'Preparing for Scrum Master certification and leading transformation initiatives.',
-          updatedAt: '2024-01-12T09:15:00Z'
-        }
-      ]
-    }
+      // ... existing data
+      careerGoals: [], // Will be loaded from backend
+      teamMembers: [], // Will be loaded from backend
+      loading: false
+    };
   },
-  computed: {
-    minDate() {
-      const today = new Date();
-      return today.toISOString().split('T')[0];
-    },
-    
-    filteredGoals() {
-      let filtered = this.careerGoals;
-      
-      if (this.filters.category) {
-        filtered = filtered.filter(goal => goal.category === this.filters.category);
-      }
-      
-      if (this.filters.priority) {
-        filtered = filtered.filter(goal => goal.priority === this.filters.priority);
-      }
-      
-      if (this.filters.teamMember) {
-        filtered = filtered.filter(goal => goal.teamMemberId === parseInt(this.filters.teamMember));
-      }
-      
-      if (this.filters.search) {
-        const query = this.filters.search.toLowerCase();
-        filtered = filtered.filter(goal => 
-          goal.skillName.toLowerCase().includes(query) ||
-          goal.notes.toLowerCase().includes(query) ||
-          goal.teamMember.name.toLowerCase().includes(query)
-        );
-      }
-      
-      return filtered.sort((a, b) => {
-        const priorityOrder = { critical: 4, high: 3, medium: 2, low: 1 };
-        return priorityOrder[b.priority] - priorityOrder[a.priority];
-      });
-    }
+  async mounted() {
+    await this.loadData();
   },
   methods: {
-    closeForm() {
-      this.showForm = false;
-      this.editMode = false;
-      this.resetForm();
-      this.errors = {};
-    },
-    
-    resetForm() {
-      this.form = {
-        teamMemberId: '',
-        skillName: '',
-        category: '',
-        currentLevel: '',
-        targetLevel: '',
-        targetDate: '',
-        priority: 'medium',
-        currentProgress: 0,
-        resources: [{ name: '', url: '' }],
-        notes: ''
-      };
-    },
-    
-    addResource() {
-      this.form.resources.push({ name: '', url: '' });
-    },
-    
-    removeResource(index) {
-      if (this.form.resources.length > 1) {
-        this.form.resources.splice(index, 1);
+    async loadData() {
+      this.loading = true;
+      try {
+        // Load career goals and team members from backend
+        const [careerData, teamData] = await Promise.all([
+          this.$careerService.getCareerForms(),
+          this.$projectService.getProjects() // To get team members
+        ]);
+
+        this.careerGoals = careerData.results || [];
+        // Extract team members from projects
+        this.extractTeamMembers(teamData.results || []);
+      } catch (error) {
+        console.error('Failed to load data:', error);
+      } finally {
+        this.loading = false;
       }
     },
-    
-    validateForm() {
-      this.errors = {};
-      
-      if (!this.form.teamMemberId) {
-        this.errors.teamMemberId = 'Team member is required';
-      }
-      
-      if (!this.form.skillName.trim()) {
-        this.errors.skillName = 'Skill name is required';
-      }
-      
-      if (!this.form.currentLevel) {
-        this.errors.currentLevel = 'Current level is required';
-      }
-      
-      if (!this.form.targetLevel) {
-        this.errors.targetLevel = 'Target level is required';
-      }
-      
-      if (!this.form.targetDate) {
-        this.errors.targetDate = 'Target date is required';
-      } else {
-        const targetDate = new Date(this.form.targetDate);
-        const today = new Date();
-        if (targetDate <= today) {
-          this.errors.targetDate = 'Target date must be in the future';
-        }
-      }
-      
-      // Validate level progression
-      const levels = ['beginner', 'intermediate', 'advanced', 'expert'];
-      const currentIndex = levels.indexOf(this.form.currentLevel);
-      const targetIndex = levels.indexOf(this.form.targetLevel);
-      
-      if (currentIndex >= targetIndex) {
-        this.errors.targetLevel = 'Target level must be higher than current level';
-      }
-      
-      return Object.keys(this.errors).length === 0;
+
+    extractTeamMembers(projects) {
+      const members = new Map();
+      projects.forEach(project => {
+        project.assigned_users?.forEach(user => {
+          members.set(user.id, {
+            id: user.id,
+            name: user.first_name + ' ' + user.last_name,
+            role: user.role,
+            avatar: user.avatar || '/api/placeholder/40/40'
+          });
+        });
+      });
+      this.teamMembers = Array.from(members.values());
     },
-    
+
     async submitForm() {
       if (!this.validateForm()) return;
-      
+
       this.isSubmitting = true;
-      
       try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        const teamMember = this.teamMembers.find(m => m.id === parseInt(this.form.teamMemberId));
-        
-        const goalData = {
-          ...this.form,
-          teamMember,
+        const formData = {
+          skill_name: this.form.skillName,
+          category: this.form.category,
+          current_level: this.form.currentLevel,
+          target_level: this.form.targetLevel,
+          target_date: this.form.targetDate,
+          priority: this.form.priority,
+          current_progress: this.form.currentProgress,
           resources: this.form.resources.filter(r => r.name.trim()),
-          updatedAt: new Date().toISOString()
+          notes: this.form.notes
         };
-        
+
         if (this.editMode) {
-          // Update existing goal
-          const index = this.careerGoals.findIndex(g => g.id === this.editingGoalId);
-          if (index !== -1) {
-            this.careerGoals.splice(index, 1, { 
-              ...goalData, 
-              id: this.editingGoalId 
-            });
-          }
+          await this.$careerService.updateCareerForm(this.editingGoalId, formData);
         } else {
-          // Add new goal
-          goalData.id = this.careerGoals.length + 1;
-          this.careerGoals.unshift(goalData);
+          await this.$careerService.createCareerForm(formData);
         }
-        
+
+        await this.loadData(); // Refresh data
         this.closeForm();
-        console.log('Goal saved successfully');
-        
+
       } catch (error) {
         console.error('Error saving goal:', error);
+        alert('Failed to save goal: ' + error.message);
       } finally {
         this.isSubmitting = false;
       }
     },
-    
-    editGoal(goal) {
-      this.editMode = true;
-      this.editingGoalId = goal.id;
-      this.form = {
-        teamMemberId: goal.teamMemberId,
-        skillName: goal.skillName,
-        category: goal.category,
-        currentLevel: goal.currentLevel,
-        targetLevel: goal.targetLevel,
-        targetDate: goal.targetDate,
-        priority: goal.priority,
-        currentProgress: goal.currentProgress,
-        resources: goal.resources.length ? [...goal.resources] : [{ name: '', url: '' }],
-        notes: goal.notes
-      };
-      this.showForm = true;
-    },
-    
-    deleteGoal(goalId) {
+
+    async deleteGoal(goalId) {
       if (confirm('Are you sure you want to delete this career goal?')) {
-        this.careerGoals = this.careerGoals.filter(g => g.id !== goalId);
-        console.log('Goal deleted successfully');
+        try {
+          await this.$careerService.deleteCareerForm(goalId);
+          await this.loadData(); // Refresh data
+        } catch (error) {
+          console.error('Error deleting goal:', error);
+          alert('Failed to delete goal: ' + error.message);
+        }
       }
-    },
-    
-    getProgressColor(progress) {
-      if (progress >= 80) return 'progress-excellent';
-      if (progress >= 60) return 'progress-good';
-      if (progress >= 40) return 'progress-fair';
-      return 'progress-poor';
-    },
-    
-    formatDate(dateString) {
-      return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-      });
-    },
-    
-    formatRelativeDate(dateString) {
-      const date = new Date(dateString);
-      const now = new Date();
-      const diffTime = Math.abs(now - date);
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      
-      if (diffDays === 1) return 'yesterday';
-      if (diffDays < 7) return `${diffDays} days ago`;
-      if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-      return `${Math.floor(diffDays / 30)} months ago`;
     }
   }
-}
+};
 </script>
 
 <style scoped>

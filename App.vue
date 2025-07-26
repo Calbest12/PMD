@@ -209,7 +209,7 @@
                   <p class="text-gray-400">Manage and track your active projects</p>
                 </div>
               </div>
-              <ProjectDashboard />
+              <Project Dashboard />
             </div>
           </div>
 
