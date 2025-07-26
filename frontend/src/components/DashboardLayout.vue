@@ -777,11 +777,11 @@ export default {
             aVal = a.progress;
             bVal = b.progress;
             break;
-          case 'priority':
+          case 'priority': {
             const priorityOrder = { low: 1, medium: 2, high: 3, critical: 4 };
             aVal = priorityOrder[a.priority];
             bVal = priorityOrder[b.priority];
-            break;
+            break; }
           case 'deadline':
             aVal = new Date(a.deadline);
             bVal = new Date(b.deadline);
