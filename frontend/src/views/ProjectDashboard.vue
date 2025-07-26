@@ -11,7 +11,7 @@
 </template>
 
 <script>
-import ProjectTile from './ProjectTile.vue'
+import ProjectTile from '../components/ProjectTile.vue'
 
 export default {
   name: "ProjectDashboard",
