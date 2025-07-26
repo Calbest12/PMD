@@ -10,6 +10,7 @@
   </div>
 </template>
 
+
 <script>
 import ProjectTile from '../components/ProjectTile.vue'
 
