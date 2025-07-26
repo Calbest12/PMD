@@ -1,6 +1,7 @@
 <template>
   <div class="tiles-container">
     <div
+    //provides a tile for each project in the project array:
       v-for="(project, index) in projects"
       :key="index"
       class="dashboard-tile"
