@@ -494,3 +494,37 @@ export default {
           }
         };
       </script>
+
+      <style scoped>
+      .subpage-layout {
+        display:flex;
+        height: 100vh;
+        background-color: #f9f9f9
+      }
+
+      .navigation {
+        width: 240px;
+        background-color: #f1d6ec
+      }
+
+      .main-content {
+        flex: 1;
+        padding: 2rem;
+        overflow-y: auto;
+      }
+
+      .subpage-header {
+        border-bottom: 1px solid #ddd;
+        margin-bottom: 1rem;
+      }
+
+      .subpage-header h2 {
+        margin: 0;
+        font-size: 1.5rem;
+        color: #333;
+      }
+
+      .subpage-body {
+        padding-top: 1rem;
+      }
+      </style>
