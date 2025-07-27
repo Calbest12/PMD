@@ -1,5 +1,11 @@
 <template>
   <div id="app">
+    <!-- Only show header if NOT on login, signup, forgot, or reset -->
+    <AppHeader v-if="showHeader && isLandingPage" />
+
+    <!-- Landing page (public) -->
+    <LandingPage v-if="!isAuthenticated && isLandingPage" />
+
     <!-- Show dashboard components if authenticated and on dashboard route -->
     <div v-if="isDashboardPage && isAuthenticated">
       <Navigation />
@@ -8,21 +14,30 @@
     </div>
 
     <!-- Router view for all pages -->
-    <router-view @login-success="handleLoginSuccess" @user-authenticated="handleLoginSuccess" />
+    <router-view
+        v-if="!isLandingPage || isAuthenticated"
+        @login-success="handleLoginSuccess"
+        @user-authenticated="handleLoginSuccess" />
   </div>
 </template>
 
 <script>
+
+import AppHeader from './components/Header.vue'
 import Navigation from './components/Navigation.vue'
 import Slider from './components/Slider.vue'
 import TeamAverageChart from './components/TeamAverageChart.vue'
+import LandingPage from './views/LandingPage.vue'
+
 
 export default {
   name: 'App',
   components: {
+    AppHeader,
     Navigation,
     Slider,
-    TeamAverageChart
+    TeamAverageChart,
+    LandingPage
   },
   data() {
     return {
@@ -50,6 +65,12 @@ export default {
         (this.$route.path === '/' && this.isAuthenticated)
       );
     },
+
+    isLandingPage() {
+  const authRoutes = ['/login', '/signup', '/forgot', '/reset', '/dashboard']
+  return !authRoutes.includes(this.$route.path)
+    },
+
     averageScore() {
       const scores = Object.values(this.scores);
       return scores.reduce((a, b) => a + b, 0) / scores.length;
@@ -203,5 +224,6 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+
 }
 </style>

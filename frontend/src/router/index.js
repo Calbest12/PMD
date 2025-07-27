@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
+import LandingPage     from '@/views/LandingPage.vue'
+
 // Import auth components from views folder
 import LoginPage from '@/views/LoginPage.vue'
 import SignUpPage from '@/views/SignUpPage.vue'
@@ -13,7 +15,13 @@ const DashboardView = () => import('@/components/DashboardLayout.vue')
 import authService from '@/services/authService'
 
 const routes = [
+    // public landing page for everyone
   {
+    path: '/',
+    name: 'Home',
+    component: LandingPage
+  },
+  { // Fallback redirect
     path: '/',
     redirect: () => {
       return authService.isAuthenticated() ? '/dashboard' : '/login'
