@@ -218,6 +218,42 @@
             ></textarea>
           </div>
 
+          <!-- Reflections -->
+          div class="form-group">
+            <label for="reflections" class="form-label">Reflections</label>
+            <textarea
+              id="reflections"
+              v-model="form.reflections"
+              rows="3"
+              class="form-textarea"
+              placeholder="What have you learned about yourself or your team recently?"
+            ></textarea>
+          </div>
+
+          <!-- Achievements -->
+          div class="form-group">
+            <label for="achievements" class="form-label">Achievements</label>
+            <textarea
+              id="achievements"
+              v-model="form.achievements"
+              rows="3"
+              class="form-textarea"
+              placeholder="List key achievements or wins (e.g., completed major task, led team effort)..."
+            ></textarea>
+          </div>
+
+          <!-- Future Goals -->
+          div class="form-group">
+            <label for="futureGoals" class="form-label">Future Goals</label>
+            <textarea
+              id="futureGoals"
+              v-model="form.futureGoals"
+              rows="3"
+              class="form-textarea"
+              placeholder="What are your short-term or long-term career aspirations?"
+            ></textarea>
+          </div>
+
           <!-- Form Actions -->
           <div class="form-actions">
             <button type="button" @click="closeForm" class="cancel-button">
@@ -451,6 +487,10 @@ export default {
           current_progress: this.form.currentProgress,
           resources: this.form.resources.filter(r => r.name.trim()),
           notes: this.form.notes
+          //new fields for reflections, achievements, and future goals.
+          reflections: this.form.reflections,
+          achievements: this.form. achievements,
+          future_goals: this.form.futureGoals
         };
 
         if (this.editMode) {
