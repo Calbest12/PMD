@@ -50,6 +50,10 @@
 
       <!-- Main Content Area -->
       <main class="dashboard-main">
+//develop animated transitions between dashboard states:
+      <transition name="fade" mode="out-in">
+       <div :key="activeSection">
+
         <!-- Projects Section with Filtering -->
         <div v-if="activeSection === 'projects'" class="projects-section">
           <!-- Projects Header -->
@@ -576,6 +580,8 @@
             <p>Settings panel coming soon...</p>
           </div>
         </div>
+       </div>
+      </transition>
       </main>
     </div>
   </div>
@@ -1863,3 +1869,15 @@ export default {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+
+.fade-enter-active, .fade-leave-active {
+    transition: opacity 0.4s ease;
+}
+
+.fade-enter-from, .fade-leave-to {
+    opacity: 0;
+}
+
+.fade-enter-to, .fade-leave-from {
+    opacity: 1;
+}
