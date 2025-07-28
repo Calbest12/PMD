@@ -39,7 +39,7 @@ export default {
 }
 
 .overlay-box {
-  background-color: midnightblue;
+  background-color: black;
   padding: 3rem;
   text-align: center;
   color: beige;

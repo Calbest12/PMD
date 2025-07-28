@@ -50,7 +50,7 @@ export default {
         {
           id: "comments",
           label: "Comments",
-          icon: 'icon-message-circle,
+          icon: 'icon-message-circle',
           description:
             "Provide feedback and notes on projects to keep things up-to-date."
         }
