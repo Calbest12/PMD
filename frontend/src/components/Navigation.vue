@@ -46,6 +46,13 @@ export default {
           icon: "📊",
           description:
             "Turn data into insights. Create stunning visualizations and intelligent summaries that make decision-making delightful."
+        },
+        {
+          id: "comments",
+          label: "Comments",
+          icon: 'icon-message-circle,
+          description:
+            "Provide feedback and notes on projects to keep things up-to-date."
         }
       ]
     };
