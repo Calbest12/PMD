@@ -15,7 +15,6 @@
 
     <!-- Router view for all pages -->
     <router-view
-        v-if="!isLandingPage || isAuthenticated"
         @login-success="handleLoginSuccess"
         @user-authenticated="handleLoginSuccess" />
   </div>

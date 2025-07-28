@@ -52,6 +52,7 @@
 
 <script setup>
 import { ref, defineEmits } from 'vue'
+import authService from '../services/authService'
 
 const email    = ref('')
 const password = ref('')
@@ -60,24 +61,27 @@ const message  = ref('')
 // Define emits
 const emit = defineEmits(['login-success'])
 
-function onSubmit() {
+async function onSubmit() {
   message.value = ''
-  // Basic front-end check
+
   if (!email.value || !password.value) {
     message.value = 'Both fields are required.'
     return
   }
-  
-  // Simulate login (replace with your actual login logic)
-  const userData = {
-    name: 'User', // You can extract this from your API response
-    email: email.value,
-    id: Date.now() // Replace with actual user ID from API
+
+  try {
+    const result = await authService.login(email.value, password.value)
+
+    if (result.success) {
+      emit('login-success', result.user)
+    } else {
+      message.value = result.error
+    }
+  } catch (err) {
+    message.value = 'Unexpected error occurred. Please try again.'
+    console.error(err)
   }
-  
-  // Emit the login success event to App.vue
-  emit('login-success', userData)
-  
+
   // Optional: The router push is not needed since App.vue handles navigation
   // router.push('/dashboard')
 }
