@@ -39,6 +39,11 @@
             <div class="current-value">{{ slider.currentValue }}</div>
             <div class="value-unit">{{ slider.unit || '%' }}</div>
             <div class="value-range">{{ slider.minValue }} - {{ slider.maxValue }}</div>
+
+                          <!-- Average Team Response -->
+            <div class="team-average" v-if="slider.teamAverage !== undefined">
+                Team Avg: {{ slider.teamAverage.toFixed(1) }}
+            </div>
           </div>
         </div>
 
@@ -248,6 +253,7 @@ export default {
           category: 'progress',
           currentValue: 75,
           originalValue: 75,
+          teamAverage: undefined, //added team averages for sliders
           maxValue: 100,
           minValue: 0,
           step: 1,
@@ -290,6 +296,7 @@ export default {
           label: 'Team Velocity',
           description: 'Sprint velocity based on story points completed',
           category: 'performance',
+          teamAverage: undefined, //avg team response values
           currentValue: 85,
           originalValue: 85,
           maxValue: 100,
@@ -319,6 +326,7 @@ export default {
           label: 'Budget Utilization',
           description: 'Percentage of allocated budget currently utilized',
           category: 'budget',
+          teamAverage: undefined,
           currentValue: 60,
           originalValue: 60,
           maxValue: 100,
@@ -347,6 +355,7 @@ export default {
           label: 'Code Quality',
           description: 'Overall code quality score based on automated analysis',
           category: 'quality',
+          teamAverage: undefined,
           currentValue: 92,
           originalValue: 92,
           maxValue: 100,
@@ -376,6 +385,7 @@ export default {
           label: 'Client Satisfaction',
           description: 'Client feedback and satisfaction rating from recent surveys',
           category: 'satisfaction',
+          teamAverage: undefined,
           currentValue: 88,
           originalValue: 88,
           maxValue: 100,
@@ -405,6 +415,7 @@ export default {
           label: 'Timeline Adherence',
           description: 'How well the project is adhering to planned timeline',
           category: 'timeline',
+          teamAverage: undefined,
           currentValue: 78,
           originalValue: 78,
           maxValue: 100,
@@ -448,6 +459,8 @@ export default {
   mounted() {
     // Simulate real-time updates
     this.startRealTimeUpdates();
+    //fetch team avg on load...
+    this.fetchTeamAverages();
   },
   beforeUnmount() {
     if (this.realTimeInterval) {
@@ -455,6 +468,29 @@ export default {
     }
   },
   methods: {
+    <!-- new method to fetch team avg -->
+    async fetchTeamAverages() {
+        try {
+          const analytics = await this.$feedbackService.getDashboardAnalytics();
+          if (analytics.success && analytics.average_scores) {
+            this.sliders.forEach(slider => {
+                const categoryMap = {
+                    progress: 'PM',
+                    performance: 'Leadership',
+                    budget: 'ChangeMgmt',
+                    quality: "Quality',
+                    satisfaction: 'Satisfaction',
+                    timeline: 'Timeline'
+                };
+                const mapped = categoryMap[slider.category];
+                slider.teamAverage = analytics.average_scores[mapped] || 0;
+               });
+             }
+          } catch (err) {
+             console.error('Failed to load team averages:', err);
+         }
+    },
+
     handleSliderInput(slider) {
       // Real-time visual feedback during drag
       this.updateSliderState(slider);
@@ -1413,5 +1449,11 @@ export default {
     gap: 0.5rem;
     text-align: center;
   }
+}
+.team-average {
+    font-size: 0.85rem;
+    margin-top: 4px;
+    color: #374151;
+    font-style: italic;
 }
 </style>
