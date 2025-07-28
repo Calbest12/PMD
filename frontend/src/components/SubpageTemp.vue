@@ -237,14 +237,26 @@
             </div>
           </div>
         </div>
+
+        <!-- Comments Tab -->
+        <div v-if="activeTab === 'comments'" class="comments-tab"
+            <CommentSubmission
+                :initial-comments="comments"
+                @comment-submitted="handleNewComment"
+            />
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import CommentSubmission from './CommentSubmission.vue';
 export default {
   name: 'SubpageTemplate',
+  components: {
+    CommentSubmission
+  },
   props: {
     pageTitle: {
       type: String,

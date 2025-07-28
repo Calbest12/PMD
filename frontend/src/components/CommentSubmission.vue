@@ -1,14 +1,16 @@
 <template>
-  <div class="comment-section">
+  <div class="comment-submission">
     <h3>Comments</h3>
 
+                                   <!-- Comment Form -->
     <form @submit.prevent="submitComment" class="comment-form">
-        <textarea v-model="new comment" placeholder="Add a comment..." rows="3"></textarea>
+        <textarea v-model="newComment" placeholder="Add a comment..." rows="3"></textarea>
         <button type="submit" :disabled="newComment.trim() ===''">Submit</button>
     </form>
 
+                                  <!-- Comment History -->
     <div class="comments-history">
-      <div v-for="(comment, index) in comments" :key="index" class="comment>
+      <div v-for="(comment, index) in comments" :key="index" class="comment">
         <p class="meta">
           <strong>{{ comment.user }}</strong> - <span>{{ formatTimestamp(comment.timestamp) }}</span>
         </p>
@@ -21,33 +23,31 @@
 
 <script>
 export default {
-   name: "CommentSection",
+   name: "CommentSubmission",
+   props: {
+    initialComments: {
+      type: Array,
+      default: () => []
+     }
+   },
    data() {
     return {
      newComment: "",
-     comments: [
-       {
-         user: "Hind",
-         text: "Don't forget to update metrics weekly.",
-         timestamp: new Date().toISOString()
-       },
-       {
-         user: "Bob",
-         text: "I added the API documentation under resources.",
-         timestamp: new Date().toISOString()
-       }
-    ]
+     comments: [...this.initialComments]
   };
 },
 methods: {
   submitComment() {
     const comment = {
 ////im going to double check how the current user is stored so this might change still.
-      user: this.$store.stat.user.username,
-      text: this.newComment,
+      user: this.$store?state?user?.username || "Current User",
+      text: this.newComment.trim(),
       timestamp: new Date().toISOString()
     };
+    //local update
     this.comments.unshift(comment);
+    this.$emit('comment-submitted', comment);
+    //reset input
     this.newComment = "";
   },
   formatTimestamp(timestamp) {
@@ -60,7 +60,7 @@ methods: {
 
 
 <style scoped>
-.comment-section {
+.comment-submission {
     border-top:1px solid #cccccc;
     padding-top: 1rem;
     margin-top: 2rem;
@@ -75,7 +75,7 @@ methods: {
 .comment-form textarea {
     resize: none;
     padding: 0.5rem;
-    margin-button: 0.5rem;
+    margin-bottom: 0.5rem;
 }
 
 .comment-form button {
