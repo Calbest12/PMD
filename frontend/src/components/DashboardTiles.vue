@@ -19,31 +19,11 @@
 
 <script>
 export default {
-  name: 'DashboardTile',
+  name: 'DashboardTiles',
   props: {
     projects: {
       type: Array,
-      required: false,
-      default: () => ([
-        {
-          name: 'Project Alpha',
-          status: 'In Progress',
-          dueDate: '2025-08-01',
-          chosen: false
-        },
-        {
-          name: 'Project Beta',
-          status: 'Completed',
-          dueDate: '2025-07-15',
-          chosen: false
-        },
-        {
-          name: 'Project Gamma',
-          status: 'Not Started',
-          dueDate: '2025-09-10',
-          chosen: false
-        }
-      ])
+      required: true
     }
   },
   methods: {
@@ -51,7 +31,7 @@ export default {
       alert(`Opening project: ${project.name}`);
     }
   }
-}
+};
 </script>
 
 <style scoped>

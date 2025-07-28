@@ -3,7 +3,7 @@
 
   //Form for adding project tiles, so they are dynamically displayed.
   <form @submit.prevent="addProject" class="project-form">
-   <input v-model=newProject.name" placeholder="Project Name" required />
+   <input v-model="newProject.name" placeholder="Project Name" required />
    <select v-model="newProject.status" required>
     <option disabled value="">Select Status</option>
     <option>Planned</option>
@@ -14,25 +14,19 @@
     <button type="submit">Add Project</button>
     </form>
 
-
-    <ProjectTile
-      v-for="(project, index) in projectList"
-      :key="index"
-      :name="project.name"
-      :status="project.status"
-      :dueDate="project.dueDate"
-    />
+  <!-- Render Project Tiles Dynamically -->
+    <DashboardTiles :projects="projectList" />
   </div>
 </template>
 
 
 <script>
-import ProjectTile from '../components/ProjectTile.vue'
+import DashboardTiles from '../components/DashboardTiles.vue'
 
 export default {
   name: "ProjectDashboard",
   components: {
-    ProjectTile
+    DashboardTiles
   },
   data() {
     return {
@@ -104,7 +98,7 @@ flex-wrap: wrap;
     background-color: #FFFFFF;
     color: white;
     border: none;
-    border-radius: 6px
+    border-radius: 6px;
     cursor: pointer;
 }
 
