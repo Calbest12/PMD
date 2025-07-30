@@ -47,29 +47,36 @@ class AuthService {
   }
 
   async login(email, password) {
-    try {
-      const response = await axios.post(`${this.baseURL}/auth/login/`, {
-        email,
-        password
-      })
+  console.log('[authService] login() called with:', email)
 
-      const { access, refresh, user } = response.data
+  try {
+    console.log('[authService] Sending POST to:', `${this.baseURL}/auth/login/`)
 
-      // Store tokens and user data
-      localStorage.setItem('access_token', access)
-      localStorage.setItem('refresh_token', refresh)
-      localStorage.setItem('user_data', JSON.stringify(user))
-      localStorage.setItem('isAuthenticated', 'true')
+    const response = await axios.post(`${this.baseURL}/auth/login/`, {
+      email,
+      password
+    })
 
-      return { success: true, user }
-    } catch (error) {
-      console.error('Login error:', error)
-      return {
-        success: false,
-        error: error.response?.data?.detail || error.response?.data?.non_field_errors?.[0] || 'Login failed'
-      }
+    console.log('[authService] Login response:', response)
+
+    const { access, refresh, user } = response.data
+
+    localStorage.setItem('access_token', access)
+    localStorage.setItem('refresh_token', refresh)
+    localStorage.setItem('user_data', JSON.stringify(user))
+    localStorage.setItem('isAuthenticated', 'true')
+
+    return { success: true, user }
+  } catch (error) {
+    console.error('[authService] Login error:', error)
+    return {
+      success: false,
+      error: error.response?.data?.detail ||
+             error.response?.data?.non_field_errors?.[0] ||
+             'Login failed'
     }
   }
+}
 
   async register(userData) {
     try {

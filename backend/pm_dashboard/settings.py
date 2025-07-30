@@ -108,13 +108,26 @@ SIMPLE_JWT = {
 }
 
 # CORS settings for Vue.js frontend
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8080",  # Vue.js development server
-    "http://127.0.0.1:8080",
-    "http://localhost:3000",
+from corsheaders.defaults import default_headers
+
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "access-control-allow-origin",
+    "authorization",
+    "x-csrftoken",
+    "x-requested-with",
 ]
 
-CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+]
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [

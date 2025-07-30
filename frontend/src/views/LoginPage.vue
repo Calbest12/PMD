@@ -62,25 +62,25 @@ const message  = ref('')
 const emit = defineEmits(['login-success'])
 
 async function onSubmit() {
+  console.log('[LoginPage] Submitting login form...')
+
   message.value = ''
 
   if (!email.value || !password.value) {
     message.value = 'Both fields are required.'
     return
   }
-
-  try {
     const result = await authService.login(email.value, password.value)
+    console.log('[LoginPage] Login result:', result)
+
 
     if (result.success) {
       emit('login-success', result.user)
     } else {
       message.value = result.error
     }
-  } catch (err) {
-    message.value = 'Unexpected error occurred. Please try again.'
-    console.error(err)
-  }
+
+
 
   // Optional: The router push is not needed since App.vue handles navigation
   // router.push('/dashboard')
